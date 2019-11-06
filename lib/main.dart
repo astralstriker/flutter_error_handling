@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_error_handling/api_exception.dart';
-import 'package:flutter_error_handling/result.dart';
+import 'package:flutter_error_handling/result_e.dart';
 
 void main() => runApp(MyApp());
 
@@ -55,9 +55,10 @@ class _MyAppState extends State<MyApp> {
                       stream: _resultStream,
                       builder: (context, snapshot) {
                         final message = !snapshot.hasError ? snapshot.data?.when(
-                                (success) => success.value,
-                                (error) => error.value,
-                                (nullError) => nullError.value) ??
+                            onSuccess: (success) => success.value,
+                            onMalformedDataError: (error) => error.value,
+                            onNullResponseError: (nullError) =>
+                            nullError.value) ??
                             "No operation performed yet" : "Exception occurred";
 
                         return Text(
@@ -70,19 +71,26 @@ class _MyAppState extends State<MyApp> {
                 RaisedButton(
                   child: Text('Ok'),
                   color: Colors.green,
-                  onPressed: () => _resultSink.add(Success("success!")),
+                  onPressed: () {
+                    try {
+                      _resultSink.add(Success("success!"));
+                    }
+                    on ApiException catch (e) {
+                      _resultController.addError(e);
+                    }
+                  },
                 ),
                 RaisedButton(
                   child: Text('Error#1'),
                   color: Colors.orange,
                   onPressed: () {
-                    _resultSink.add(MalformedResultError());
+                    _resultSink.add(MalformedDataError());
                   },
                 ),
                 RaisedButton(
                   child: Text('Error#2'),
                   color: Colors.orange,
-                  onPressed: () => _resultSink.add(NullResultError()),
+                  onPressed: () => _resultSink.add(NullResponseError()),
                 ),
                 RaisedButton(
                   child: Text('Exception#1'),

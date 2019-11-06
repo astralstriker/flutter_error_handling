@@ -20,7 +20,7 @@ T> {
       return nullResultError(this as NullResultError);
     }
     else {
-      throw new Exception('Unhendled part, could be anything');
+      throw new Exception('Unhandled part, could be anything');
     }
   }
 }
